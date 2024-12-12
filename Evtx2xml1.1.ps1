@@ -1,4 +1,4 @@
-# Prompt for the directory containing the .evtx files
+﻿# Prompt for the directory containing the .evtx files
 $directoryPath = Read-Host -Prompt "Enter the directory containing the .evtx files"
 
 # Prompt for the output directory
