@@ -1,4 +1,4 @@
-﻿#region Prompts
+#region Prompts
 
 # Prompt for the lab name
 $labName = Read-Host -Prompt "Enter the name of this lab"
@@ -123,14 +123,6 @@ Write-Host "Copying gateway template VHDX to $gatewayVhdxPath"
 Copy-Item -Path $gatewayTemplateVHDXPath -Destination $gatewayVhdxPath
 
 Write-Host "Creating gateway VM: $gatewayName"
-# Create an array to specify all network adapters.
-$NetworkAdapters = @()
-foreach($switch in $switches){
-    $NetworkAdapters += @{
-        Name        = "Network Adapter" #This is important for multiple adapters
-        SwitchName = $switch
-    }
-}
 
 # Create the VM connected to the *first* switch initially.
 New-VM -Name $gatewayName -MemoryStartupBytes ($ramMB * 1MB) -Generation 2 -VHDPath $gatewayVhdxPath -Path $vmPath -SwitchName $switches[0]
