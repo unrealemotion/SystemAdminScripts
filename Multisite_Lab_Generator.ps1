@@ -1,4 +1,4 @@
-#region Prompts
+﻿#region Prompts
 
 # Prompt for the lab name
 $labName = Read-Host -Prompt "Enter the name of this lab"
@@ -9,13 +9,19 @@ $labStoragePath = Read-Host -Prompt "Enter the root path to store this lab (e.g.
 # Prompt for the number of network sites
 $numSites = [int](Read-Host -Prompt "Enter the number of network sites")
 
-# Prompt for the template VHDX path
-$templateVHDXPath = Read-Host -Prompt "Enter the path to the syspreped VHDX file (e.g., C:\Template\template.vhdx)"
+# Prompt for the member server VHDX template path
+$vmTemplateVHDXPath = Read-Host -Prompt "Enter the path to the Client server (domain member) VHDX file (e.g., C:\Template\vm_template.vhdx)"
 
-# Prompt for the gateway template, use the template vhdx file if type n
-$gatewayTemplateVHDXPath = Read-Host -Prompt "Enter the path to the gateway VHDX file, or 'n' to use the main template"
+# Prompt for the DC VHDX template, use the member server template if type n
+$dcTemplateVHDXPath = Read-Host -Prompt "Enter the path to the DC VHDX file, or 'n' to use the client server template"
+if ($dcTemplateVHDXPath -eq 'n') {
+    $dcTemplateVHDXPath = $vmTemplateVHDXPath
+}
+
+# Prompt for the gateway template, use the member server template if type n
+$gatewayTemplateVHDXPath = Read-Host -Prompt "Enter the path to the gateway VHDX file, or 'n' to use the client server template"
 if ($gatewayTemplateVHDXPath -eq 'n') {
-    $gatewayTemplateVHDXPath = $templateVHDXPath
+    $gatewayTemplateVHDXPath = $vmTemplateVHDXPath
 }
 
 # Prompt for the amount of RAM (in MB)
@@ -90,9 +96,9 @@ foreach ($site in $sites) {
         $dcName = "${labName}_Site$($site.SiteNumber)_DC$i"
         $newVHDXPath = Join-Path $siteVhdxPath "$dcName.vhdx"
 
-        # Copy the template VHDX
-        Write-Host "Copying template VHDX to $newVHDXPath"
-        Copy-Item -Path $templateVHDXPath -Destination $newVHDXPath
+        # Copy the DC template VHDX
+        Write-Host "Copying DC template VHDX to $newVHDXPath"
+        Copy-Item -Path $dcTemplateVHDXPath -Destination $newVHDXPath  # Use $dcTemplateVHDXPath
 
         # Create the DC
         Write-Host "Creating domain controller: $dcName"
@@ -104,9 +110,9 @@ foreach ($site in $sites) {
         $vmName = "${labName}_Site$($site.SiteNumber)_VM$i"
         $newVHDXPath = Join-Path $siteVhdxPath "$vmName.vhdx"
 
-        # Copy the template VHDX
-        Write-Host "Copying template VHDX to $newVHDXPath"
-        Copy-Item -Path $templateVHDXPath -Destination $newVHDXPath
+        # Copy the VM template VHDX
+        Write-Host "Copying VM template VHDX to $newVHDXPath"
+        Copy-Item -Path $vmTemplateVHDXPath -Destination $newVHDXPath  # Use $vmTemplateVHDXPath
 
         # Create the member server
         Write-Host "Creating member server: $vmName"
@@ -133,4 +139,5 @@ for ($i = 1; $i -lt $switches.Count; $i++) {
     Add-VMNetworkAdapter -VMName $gatewayName -SwitchName $switches[$i] -Name "Network Adapter"
 }
 
+#endregion
 Write-Host "VM deployment completed!"
